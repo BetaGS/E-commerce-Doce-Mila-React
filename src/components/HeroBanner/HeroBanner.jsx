@@ -9,7 +9,7 @@ const HeroBanner = () => {
         <div className="hero-content">
           <h2>Doces feitos com amor e carinho</h2>
           <p>Descubra nossos bolos, tortas e doces artesanais feitos com os melhores ingredientes</p>
-          <a href="#products" className="btn">Ver Produtos</a>
+          <a href="/produtos" className="btn">Ver Produtos</a>
         </div>
       </div>
     </section>
