@@ -1,15 +1,18 @@
+// src/App.jsx (atualizado)
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import Home from './pages/Home/Home';
 import ProductDetail from './pages/ProductDetail/ProductDetail';
 import About from './pages/About/About';
 import Products from './pages/Products/Products';
+import Login from './pages/Auth/Login/Login';
+import Register from './pages/Auth/Register/Register';
 import Footer from './components/Footer/Footer';
 import Cart from './components/Cart/Cart';
 import './App.css';
 
-// DADOS COMPLETOS: Adicionados campos obrigatórios para evitar erros de undefined
+// Dados dos produtos
 const productsData = [
   { 
     id: 1, 
@@ -17,17 +20,10 @@ const productsData = [
     price: 15.0, 
     image: '/images/Logo.jpg',
     category: 'Bolos',
-    description: 'Bolo de chocolate macio com brigadeiro cremoso',
-    detailedDescription: 'Nossa receita exclusiva de bolo de pote utiliza cacau 100% e camadas generosas.',
-    ingredients: ['Leite condensado', 'Chocolate 50%', 'Farinha', 'Ovos'], // Campo obrigatório
-    weight: '250g',
-    servings: '1 pessoa',
-    preparationTime: 'Diário',
+    description: 'Bolo de chocolate macio com recheio de brigadeiro cremoso',
     rating: 4.5,
     reviewCount: 32,
-    isNew: true,
-    gallery: ['/images/Logo.jpg'], // Campo obrigatório
-    allergens: ['Lactose', 'Glúten']
+    isNew: true
   },
   { 
     id: 2, 
@@ -35,17 +31,21 @@ const productsData = [
     price: 5.0, 
     image: '/images/Logo.jpg',
     category: 'Doces',
-    description: 'Brigadeiro artesanal com chocolate belga',
-    detailedDescription: 'O clássico brigadeiro brasileiro elevado ao nível gourmet.',
-    ingredients: ['Leite condensado', 'Chocolate Belga', 'Manteiga'],
-    weight: '20g',
-    servings: '1 unidade',
-    preparationTime: 'Fresco',
+    description: 'Brigadeiro artesanal com chocolate belga e granulado especial',
     rating: 5,
     reviewCount: 47,
-    isNew: false,
-    gallery: ['/images/Logo.jpg'],
-    allergens: ['Lactose']
+    isNew: false
+  },
+  { 
+    id: 3, 
+    name: 'Palha Italiana', 
+    price: 7.0, 
+    image: '/images/Logo.jpg',
+    category: 'Doces',
+    description: 'Doce feito com biscoito, leite condensado e chocolate',
+    rating: 4.2,
+    reviewCount: 28,
+    isNew: true
   }
 ];
 
@@ -53,7 +53,45 @@ function App() {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
 
+  // Verificar autenticação ao carregar
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  // Função de login
+  const handleLogin = (userData, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setIsAuthenticated(true);
+    setUser(userData);
+  };
+
+  // Função de logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
+  // Função de cadastro
+  const handleRegister = (userData, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setIsAuthenticated(true);
+    setUser(userData);
+  };
+
+  // Resto do código (scroll, carrinho) permanece igual...
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -101,14 +139,22 @@ function App() {
           cartItemsCount={cartItems.length} 
           openCart={() => setIsCartOpen(true)}
           isScrolled={isScrolled}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onLogout={handleLogout}
         />
         <main>
           <Routes>
-            {/* CORREÇÃO: Usando o nome correto da variável 'productsData' */}
             <Route path="/" element={<Home addToCart={addToCart} products={productsData} />} />
             <Route path="/produto/:id" element={<ProductDetail products={productsData} addToCart={addToCart} />} />
             <Route path="/sobre" element={<About />} />
             <Route path="/produtos" element={<Products products={productsData} addToCart={addToCart} />} />
+            <Route path="/login" element={
+              isAuthenticated ? <Navigate to="/" /> : <Login onLogin={handleLogin} />
+            } />
+            <Route path="/cadastro" element={
+              isAuthenticated ? <Navigate to="/" /> : <Register onRegister={handleRegister} />
+            } />
           </Routes>
         </main>
         <Footer />

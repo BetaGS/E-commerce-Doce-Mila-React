@@ -18,6 +18,7 @@
   align-items: center;
   padding: 15px 0;
   position: relative;
+  animation: slideIn 0.5s ease;
 }
 
 .navbar-logo {
@@ -105,9 +106,11 @@
   z-index: 1001;
 }
 
-/* Busca */
+/* --- BUSCA (CORREÇÃO AQUI) --- */
 .search-container {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .search-toggle {
@@ -131,25 +134,32 @@
 
 .search-box {
   position: absolute;
-  top: 100%;
+  top: 50%; /* Alinha ao centro vertical do ícone */
   right: 0;
+  transform: translateY(-50%); /* Centralização perfeita */
   width: 0;
+  height: 45px; /* Altura fixa para o formulário */
   overflow: hidden;
   background-color: white;
   border-radius: 25px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  transition: width 0.3s;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
   z-index: 1002;
+  opacity: 0;
+  border: 1px solid #eee;
 }
 
 .search-box.open {
   width: 300px;
+  opacity: 1;
 }
 
 .search-box form {
   display: flex;
   align-items: center;
-  padding: 5px;
+  padding: 0 5px;
+  height: 100%;
+  width: 300px; /* Mantém o conteúdo estável durante a animação */
 }
 
 .search-input {
@@ -191,7 +201,7 @@
   color: #ff4757;
 }
 
-/* Botões de Ação */
+/* --- BOTÕES DE AÇÃO --- */
 .account-btn {
   display: none;
   align-items: center;
@@ -401,8 +411,8 @@
   }
   
   .search-box.open {
-    width: calc(100vw - 100px);
-    right: -20px;
+    width: calc(100vw - 40px); /* Ocupa quase a largura toda no mobile */
+    right: 0;
   }
   
   .navbar-mobile {
@@ -420,8 +430,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.navbar-content {
-  animation: slideIn 0.5s ease;
 }

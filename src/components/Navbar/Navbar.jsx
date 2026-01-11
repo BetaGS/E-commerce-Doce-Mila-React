@@ -1,6 +1,6 @@
 // src/components/Navbar/Navbar.jsx
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import { ShoppingCart, Menu, X, Search, User } from 'lucide-react';
 
@@ -8,22 +8,35 @@ const Navbar = ({ cartItemsCount, openCart }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // DICA BÔNUS: Cria uma referência para o input de busca
+  const searchInputRef = useRef(null);
 
   const navLinks = [
     { path: '/', label: 'Início' },
     { path: '/produtos', label: 'Produtos' },
     { path: '/sobre', label: 'Sobre Nós' },
-    { path: '/contato', label: 'Contato' }
+    { path: '/contato', label: 'Contato' },
+    { path: '/login', label: 'Login' },
   ];
+
+  // DICA BÔNUS: Foca automaticamente no input quando a barra de busca abre
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Redirecionar para página de produtos com a busca
-      window.location.href = `/produtos?search=${encodeURIComponent(searchQuery)}`;
+      navigate(`/produtos?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
       setIsSearchOpen(false);
+      setIsMenuOpen(false);
     }
   };
 
@@ -50,21 +63,12 @@ const Navbar = ({ cartItemsCount, openCart }) => {
               <ul className="nav-links">
                 {navLinks.map((link) => (
                   <li key={link.path}>
-                    {link.path.startsWith('#') ? (
-                      <a 
-                        href={link.path} 
-                        className={isActive(link.path) ? 'active' : ''}
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link 
-                        to={link.path} 
-                        className={isActive(link.path) ? 'active' : ''}
-                      >
-                        {link.label}
-                      </Link>
-                    )}
+                    <Link 
+                      to={link.path} 
+                      className={isActive(link.path) ? 'active' : ''}
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -85,6 +89,7 @@ const Navbar = ({ cartItemsCount, openCart }) => {
                 <div className={`search-box ${isSearchOpen ? 'open' : ''}`}>
                   <form onSubmit={handleSearch}>
                     <input
+                      ref={searchInputRef} // ADICIONADO: Conecta a referência ao input
                       type="text"
                       placeholder="Buscar produtos..."
                       value={searchQuery}
@@ -106,7 +111,7 @@ const Navbar = ({ cartItemsCount, openCart }) => {
               </div>
 
               {/* Conta */}
-              <Link to="/minha-conta" className="account-btn" aria-label="Minha conta">
+              <Link to="/login" className="account-btn" aria-label="Minha conta">
                 <User size={20} />
               </Link>
 
@@ -139,23 +144,13 @@ const Navbar = ({ cartItemsCount, openCart }) => {
               <ul className="mobile-nav-links">
                 {navLinks.map((link) => (
                   <li key={link.path}>
-                    {link.path.startsWith('#') ? (
-                      <a 
-                        href={link.path}
-                        onClick={() => setIsMenuOpen(false)}
-                        className={isActive(link.path) ? 'active' : ''}
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link 
-                        to={link.path}
-                        onClick={() => setIsMenuOpen(false)}
-                        className={isActive(link.path) ? 'active' : ''}
-                      >
-                        {link.label}
-                      </Link>
-                    )}
+                    <Link 
+                      to={link.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={isActive(link.path) ? 'active' : ''}
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

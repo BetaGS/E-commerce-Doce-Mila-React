@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
-import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -13,13 +13,13 @@ const Footer = () => {
             <h3 className="footer-logo">Doce Mila</h3>
             <p>Confeitaria artesanal feita com amor e ingredientes selecionados.</p>
             <div className="social-icons">
-              <a href="#" aria-label="Facebook">
-                <Facebook size={20} />
+              <a href="https://wa.me/5521996911177" aria-label="Whatsapp">
+                <MessageCircle size={20} />
               </a>
-              <a href="#" aria-label="Instagram">
+              <a href="https://www.instagram.com/doce.mila.delicia/" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
-              <a href="#" aria-label="Email">
+              <a href="doce.mila.vilar@gmail.com" aria-label="Email">
                 <Mail size={20} />
               </a>
             </div>
@@ -40,15 +40,15 @@ const Footer = () => {
             <ul className="contact-info">
               <li>
                 <Phone size={16} />
-                <span>(11) 99999-9999</span>
+                <span>(21) 99691-1177</span>
               </li>
               <li>
                 <Mail size={16} />
-                <span>contato@docemila.com.br</span>
+                <span>doce.mila.vilar@gmail.com</span>
               </li>
               <li>
                 <MapPin size={16} />
-                <span>Rua dos Doces, 123 - São Paulo, SP</span>
+                <span>Tijuca, Rio De Janeiro, RJ</span>
               </li>
             </ul>
           </div>
@@ -56,15 +56,15 @@ const Footer = () => {
           <div className="footer-section">
             <h4>Horário de Funcionamento</h4>
             <ul>
-              <li>Segunda - Sexta: 9h às 19h</li>
-              <li>Sábado: 9h às 16h</li>
-              <li>Domingo: Fechado</li>
+              <li>Terça - Sexta: 9h às 19h</li>
+              <li>Sabado: 9h às 16h</li>
+              <li>Segunda: Fechado</li>
             </ul>
           </div>
         </div>
         
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Doce Mila Confeitaria. Todos os direitos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Gabriel Siqueira. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
