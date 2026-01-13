@@ -190,7 +190,7 @@ const Contact = () => {
                 
                 <button type="submit" className="btn submit-btn" disabled={isSubmitting} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   {isSubmitting ? (
-                    <>Aguarde a API acordar... <Loader2 className="animate-spin" size={18} /></>
+                    <>Aguarde um momento... <Loader2 className="animate-spin" size={18} /></>
                   ) : (
                     <><Send size={18} /> Enviar Mensagem</>
                   )}
