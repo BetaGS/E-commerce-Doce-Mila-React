@@ -83,7 +83,7 @@ const Contact = () => {
       setTimeout(() => setIsSubmitted(false), 5000);
       
     } catch (error) {
-      setErrors({ submit: 'Servidor instável. Tente novamente em instantes.' });
+      setErrors({ submit: 'Erro. Tente novamente em instantes.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -119,7 +119,7 @@ const Contact = () => {
             <div className="form-container">
               <div className="form-header">
                 <h2>Envie sua mensagem</h2>
-                <p>O back-end Java processará seu pedido.</p>
+                <p>Nós vamos processar seu pedido.</p>
               </div>
               
               {isSubmitted && (
@@ -162,6 +162,7 @@ const Contact = () => {
                       <option value="">Selecione um assunto</option>
                       <option value="Dúvida">Dúvida sobre produtos</option>
                       <option value="Encomenda">Encomenda especial</option>
+                      <option value="Reclamação">Reclamação</option>
                       <option value="Outro">Outro</option>
                     </select>
                     {errors.subject && <span className="field-error">{errors.subject}</span>}
@@ -175,7 +176,7 @@ const Contact = () => {
                 </div>
                 
                 <button type="submit" className="btn submit-btn" disabled={isSubmitting}>
-                  {isSubmitting ? 'Conectando ao Java...' : <><Send size={18} /> Enviar Mensagem</>}
+                  {isSubmitting ? 'Enviando Mensagem...' : <><Send size={18} /> Enviar Mensagem</>}
                 </button>
               </form>
             </div>
