@@ -1,6 +1,7 @@
 // src/pages/Contact/Contact.jsx
 import React, { useState } from 'react';
 import './Contact.css';
+import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle, MessageSquare, User } from 'lucide-react';
 
 const Contact = () => {
