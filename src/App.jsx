@@ -10,6 +10,7 @@ import Login from './pages/Auth/Login/Login';
 import Register from './pages/Auth/Register/Register';
 import Footer from './components/Footer/Footer';
 import Cart from './components/Cart/Cart';
+import Contact from './pages/Contact/Contact';
 import './App.css';
 
 // Dados dos produtos
@@ -149,6 +150,7 @@ function App() {
             <Route path="/produto/:id" element={<ProductDetail products={productsData} addToCart={addToCart} />} />
             <Route path="/sobre" element={<About />} />
             <Route path="/produtos" element={<Products products={productsData} addToCart={addToCart} />} />
+            <Route path="/contato" element={<Contact />} />
             <Route path="/login" element={
               isAuthenticated ? <Navigate to="/" /> : <Login onLogin={handleLogin} />
             } />
