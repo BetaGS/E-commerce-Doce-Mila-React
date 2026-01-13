@@ -1,8 +1,6 @@
-// src/pages/Contact/Contact.jsx
 import React, { useState } from 'react';
 import './Contact.css';
-import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle, MessageSquare, User } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle, MessageSquare, User, Loader2 } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -40,7 +38,7 @@ const Contact = () => {
     if (!formData.subject.trim()) newErrors.subject = 'Assunto é obrigatório';
     if (!formData.message.trim()) {
       newErrors.message = 'Mensagem é obrigatória';
-    } else if (formData.message.length < 10) {
+    } else if (formData.message.length < 5) {
       newErrors.message = 'Mensagem muito curta';
     }
     return newErrors;
@@ -58,7 +56,7 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      // 1. ENVIO PARA A API JAVA NA RENDER
+      // 1. ENVIO PARA A API JAVA (RENDER)
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,25 +69,40 @@ const Contact = () => {
 
       if (!response.ok) throw new Error("Erro no servidor");
 
-      // 2. ABERTURA DO WHATSAPP (OPCIONAL - FEEDBACK DIRETO)
-      const text = `*NOVO CONTATO* 🚀\n\n*Nome:* ${formData.name}\n*Assunto:* ${formData.subject}\n*Mensagem:* ${formData.message}`;
-      const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-      window.open(waUrl, '_blank');
+      // 2. PREPARAÇÃO DA MENSAGEM WHATSAPP
+      const msgWhatsapp = `*NOVO CONTATO* 🚀\n\n` +
+                          `*Nome:* ${formData.name}\n` +
+                          `*Email:* ${formData.email}\n` +
+                          `*Assunto:* ${formData.subject}\n` +
+                          `*Mensagem:* ${formData.message}`;
+      
+      const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgWhatsapp)}`;
 
-      // Sucesso no estado do React
+      // 3. REDIRECIONAMENTO INTELIGENTE (RESOLVE O PROBLEMA DO CELULAR)
+      // Usamos um pequeno delay para garantir que o estado de "isSubmitting" seja processado
+      setTimeout(() => {
+        if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          // No Celular: window.location.replace ou assign funciona melhor que window.open
+          window.location.assign(waUrl);
+        } else {
+          // No PC: Abre em nova aba
+          window.open(waUrl, '_blank', 'noopener,noreferrer');
+        }
+      }, 100);
+
+      // Feedback de Sucesso
       setIsSubmitted(true);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      
       setTimeout(() => setIsSubmitted(false), 5000);
       
     } catch (error) {
-      setErrors({ submit: 'Erro. Tente novamente em instantes.' });
+      console.error("Erro:", error);
+      setErrors({ submit: 'O servidor demorou a responder. Tente novamente.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Funções de auxílio de máscara de telefone mantidas...
   const formatPhone = (value) => {
     const numbers = value.replace(/\D/g, '');
     if (numbers.length <= 2) return `(${numbers}`;
@@ -119,7 +132,7 @@ const Contact = () => {
             <div className="form-container">
               <div className="form-header">
                 <h2>Envie sua mensagem</h2>
-                <p>Nós vamos processar seu pedido.</p>
+                <p>Nós vamos processar seu pedido e te redirecionar.</p>
               </div>
               
               {isSubmitted && (
@@ -127,13 +140,13 @@ const Contact = () => {
                   <CheckCircle size={24} />
                   <div>
                     <h4>Enviado com sucesso!</h4>
-                    <p>Dados registrados no servidor e WhatsApp aberto.</p>
+                    <p>Abrindo seu WhatsApp...</p>
                   </div>
                 </div>
               )}
               
               <form onSubmit={handleSubmit} className="contact-form">
-                {errors.submit && <div className="error-message">{errors.submit}</div>}
+                {errors.submit && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{errors.submit}</div>}
                 
                 <div className="form-row">
                   <div className="form-group">
@@ -175,8 +188,12 @@ const Contact = () => {
                   {errors.message && <span className="field-error">{errors.message}</span>}
                 </div>
                 
-                <button type="submit" className="btn submit-btn" disabled={isSubmitting}>
-                  {isSubmitting ? 'Enviando Mensagem...' : <><Send size={18} /> Enviar Mensagem</>}
+                <button type="submit" className="btn submit-btn" disabled={isSubmitting} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  {isSubmitting ? (
+                    <>Aguarde a API acordar... <Loader2 className="animate-spin" size={18} /></>
+                  ) : (
+                    <><Send size={18} /> Enviar Mensagem</>
+                  )}
                 </button>
               </form>
             </div>
