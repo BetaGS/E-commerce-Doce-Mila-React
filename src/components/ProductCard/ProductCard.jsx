@@ -1,25 +1,39 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { formatCurrency } from '../../utils/format'
-import './ProductCard.css'
+// src/components/ProductCard/ProductCard.jsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+import './ProductCard.css';
+import { priceLabel } from '../../utils/format';
 
 const ProductCard = ({ product }) => {
-  const imageSrc = product?.image?.startsWith('/') 
-    ? product.image 
-    : `/images/produtos/${product?.image || 'placeholder.png'}`
+  const isQuote = product.price_cents == null;
 
   return (
     <div className="product-card">
-      <img src={imageSrc} alt={product?.name || 'Produto'} className="product-image" />
+      <Link to={`/produto/${product.slug}`} className="product-image-link">
+        <div className="product-image">
+          <img src={product.image} alt={product.name} loading="lazy" />
+          {product.is_new && <span className="product-badge">Novo</span>}
+        </div>
+      </Link>
       <div className="product-info">
-        <h3>{product?.name || 'Doce Artesanal'}</h3>
-        <p className="product-price">{formatCurrency(product?.price || 0)}</p>
-        <Link to={`/produto/${product?.id || 1}`} className="btn-details">
-          Ver Detalhes
+        <Link to={`/produto/${product.slug}`} className="product-name-link">
+          <h3 className="product-name">{product.name}</h3>
         </Link>
+        <p className="product-description">{product.description}</p>
+        <div className="product-footer">
+          <div className="product-price-block">
+            <span className={`product-price ${isQuote ? 'quote' : ''}`}>{priceLabel(product)}</span>
+            {product.min_qty > 1 && (
+              <span className="product-min-qty">Mínimo de {product.min_qty} unidades</span>
+            )}
+          </div>
+          <Link to={`/produto/${product.slug}`} className="btn add-to-cart-btn">
+            {isQuote ? 'Pedir orçamento' : 'Escolher opções'}
+          </Link>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductCard
+export default ProductCard;
