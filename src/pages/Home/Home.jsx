@@ -1,46 +1,30 @@
-// src/pages/Home/Home.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
-import HeroBanner from '../../components/HeroBanner/HeroBanner';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import './Home.css';
+import React from 'react'
+import ProductCard from '../../components/ProductCard/ProductCard'
+import './Home.css'
 
-const FEATURED_COUNT = 8;
+const mockProducts = [
+  { id: 1, name: 'Bolo de Morango Especial', price: 45.00, image: 'bolo-morango.jpg' },
+  { id: 2, name: 'Caixa de Brigadeiros Gourmet', price: 25.00, image: 'brigadeiros.jpg' },
+  { id: 3, name: 'Cupcake Red Velvet', price: 12.00, image: 'cupcake.jpg' },
+]
 
-const Home = ({ products, loading, error, onRetry }) => {
-  const featured = products.slice(0, FEATURED_COUNT);
-
+const Home = () => {
   return (
     <div className="home-page">
-      <HeroBanner />
-
-      <section id="products" className="products-section">
-        <div className="container">
-          <h2 className="section-title">Nossas Delícias</h2>
-
-          {loading && <p className="catalog-status">Carregando o cardápio...</p>}
-          {error && (
-            <div className="catalog-status">
-              <p>{error}</p>
-              <button className="btn" onClick={onRetry}>Tentar novamente</button>
-            </div>
-          )}
-
-          <div className="products-grid">
-            {featured.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          {products.length > FEATURED_COUNT && (
-            <div className="catalog-more">
-              <Link to="/produtos" className="btn">Ver cardápio completo</Link>
-            </div>
-          )}
+      <section className="hero">
+        <h1>Bem-vindo à Doce Mila</h1>
+        <p>Os melhores doces artesanais feitos com carinho para você.</p>
+      </section>
+      <section className="featured-section">
+        <h2>Destaques</h2>
+        <div className="product-grid">
+          {mockProducts.map((prod) => (
+            <ProductCard key={prod.id} product={prod} />
+          ))}
         </div>
       </section>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
