@@ -1,16 +1,51 @@
-# React + Vite
+# Doce Mila — e-commerce
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Front-end React + Vite (`src/`) e back-end Python/Flask (`backend/`) com banco SQLite.
 
-Currently, two official plugins are available:
+## Rodar localmente
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# 1) Back-end (porta 5000)
+cd backend
+python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env            # preencha SECRET_KEY e PIX_KEY
+python manage.py seed           # carrega o catálogo dos cardápios
+python app.py
 
-## React Compiler
+# 2) Front-end (porta 3000, em outro terminal, na raiz do projeto)
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+O Vite encaminha `/api` para o Flask, então não há configuração extra em desenvolvimento.
 
-## Expanding the ESLint configuration
+## Painel da confeiteira
+1. Cadastre-se no site normalmente.
+2. `python manage.py make-admin seu@email.com`
+3. Acesse `/admin` para confirmar Pix recebidos e mudar o status dos pedidos.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## WhatsApp
+- **Finalizar pedido (padrão):** o pedido é salvo no banco e o cliente abre o WhatsApp com a mensagem pronta
+  (link oficial `wa.me`, número em `WHATSAPP_NUMBER`). O pagamento é combinado na conversa; depois a confeitaria
+  confirma o sinal em `/admin`.
+- **Contato:** o formulário salva a mensagem (tabela `contacts`) e também abre o WhatsApp com o texto pronto.
+- **Aviso automático para a confeitaria (opcional, WhatsApp Business Cloud API):** preencha `WA_CLOUD_TOKEN`,
+  `WA_PHONE_NUMBER_ID` e `WA_NOTIFY_TO` no `.env`. Precisa de conta Meta Business e de um número registrado na
+  Cloud API (diferente do número que fica no aplicativo). Para mensagens fora da janela de 24h, crie na Meta um
+  template com 2 variáveis (`{{1}}` título, `{{2}}` resumo) e informe o nome em `WA_TEMPLATE_NAME`.
+
+## Pagamentos online (opcionais)
+Pix e cartão só aparecem no checkout se `PIX_KEY` / `MP_ACCESS_TOKEN` estiverem preenchidos.
+
+- **Pix**: gera Pix Copia e Cola/QR Code com a `PIX_KEY`. A confirmação é manual no `/admin`.
+- **Cartão (débito/crédito)**: Mercado Pago Checkout Pro (`MP_ACCESS_TOKEN`), confirmação automática por webhook.
+  O webhook precisa de uma URL pública HTTPS (`API_PUBLIC_URL`).
+- Sinal de 50% nas encomendas; Páscoa exige pagamento integral. Taxas de 5% (débito) e 7% (crédito) vêm do cardápio.
+
+## Catálogo
+Os produtos ficam em `backend/catalog_data.py` (valores em centavos). Edite e rode `python manage.py seed`.
+Os itens da Páscoa 2026 estão inativos; reative-os em `/api/admin/products/<id>` (PATCH `{"active": true}`).
+
+## Testes do back-end
+`cd backend && python -m unittest discover -s tests -v`

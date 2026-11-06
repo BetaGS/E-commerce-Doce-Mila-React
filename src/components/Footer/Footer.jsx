@@ -13,13 +13,13 @@ const Footer = () => {
             <h3 className="footer-logo">Doce Mila</h3>
             <p>Confeitaria artesanal feita com amor e ingredientes selecionados.</p>
             <div className="social-icons">
-              <a href="https://wa.me/5521996911177" aria-label="Whatsapp">
+              <a href="https://wa.me/5521996911177" target="_blank" rel="noopener noreferrer" aria-label="Whatsapp">
                 <MessageCircle size={20} />
               </a>
               <a href="https://www.instagram.com/doce.mila.delicia/" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
-              <a href="doce.mila.vilar@gmail.com" aria-label="Email">
+              <a href="mailto:doce.mila.vilar@gmail.com" aria-label="Email">
                 <Mail size={20} />
               </a>
             </div>

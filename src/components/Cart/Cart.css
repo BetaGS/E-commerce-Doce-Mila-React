@@ -207,3 +207,32 @@
     padding: 20px;
   }
 }
+.cart-item-options {
+  font-size: 0.82rem;
+  color: #777;
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.cart-item-unit {
+  font-weight: normal;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.cart-item-min {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 6px;
+}
+
+.quantity-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.summary-row.deposit {
+  color: #d63384;
+  font-weight: 600;
+  margin-top: 10px;
+}

@@ -1,124 +1,76 @@
 // src/pages/Products/Products.jsx
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import './Products.css';
-import { Search, Filter, Sliders, X, Star, ShoppingBag, Grid, List } from 'lucide-react';
+import { Search, Filter, Sliders, X, ShoppingBag, Grid, List } from 'lucide-react';
+import { formatBRL, priceLabel } from '../../utils/format';
 
-const Products = ({ products, addToCart }) => {
-  const [filteredProducts, setFilteredProducts] = useState(products);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('todos');
-  const [priceRange, setPriceRange] = useState([0, 50]);
-  const [sortBy, setSortBy] = useState('relevance');
+const WHATSAPP = '5521996911177';
+
+const Products = ({ products, categories, loading, error, onRetry }) => {
+  const [params, setParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedRating, setSelectedRating] = useState(0);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' ou 'list'
+  const [sortBy, setSortBy] = useState('relevance');
+  const [viewMode, setViewMode] = useState('grid');
+  const [maxPriceFilter, setMaxPriceFilter] = useState(null); // null = sem limite
 
-  // Extrair categorias únicas dos produtos
-  const categories = ['todos', ...new Set(products.map(product => product.category || 'Doces'))];
+  // Busca e categoria ficam na URL (a barra de busca do menu usa os mesmos parâmetros)
+  const searchTerm = params.get('search') || '';
+  const selectedCategory = params.get('categoria') || 'todos';
 
-  // Inicializar categorias nos produtos se não existirem
-  const productsWithCategories = products.map(product => ({
-    ...product,
-    category: product.category || 'Doces',
-    rating: product.rating || 4,
-    reviewCount: product.reviewCount || Math.floor(Math.random() * 50) + 10
-  }));
+  const updateParam = (key, value) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value); else next.delete(key);
+    setParams(next, { replace: true });
+  };
 
-  // Filtrar produtos baseado nos critérios
-  useEffect(() => {
-    let result = [...productsWithCategories];
+  const priced = products.filter((p) => p.price_cents != null);
+  const priceCeiling = Math.max(100, Math.ceil(Math.max(0, ...priced.map((p) => p.price_cents)) / 100));
+  const maxPrice = maxPriceFilter ?? priceCeiling;
+  const priceActive = maxPriceFilter !== null && maxPriceFilter < priceCeiling;
 
-    // Filtrar por termo de busca
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(product => 
-        product.name.toLowerCase().includes(term) ||
-        (product.description && product.description.toLowerCase().includes(term)) ||
-        product.category.toLowerCase().includes(term)
-      );
-    }
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    let result = products.filter((p) => {
+      if (term && !`${p.name} ${p.description} ${p.category}`.toLowerCase().includes(term)) return false;
+      if (selectedCategory !== 'todos' && p.category_slug !== selectedCategory) return false;
+      if (p.price_cents != null && p.price_cents / 100 > maxPrice) return false;
+      return true;
+    });
+    const byPrice = (dir) => (a, b) => {
+      // "Sob consulta" sempre no fim
+      if (a.price_cents == null) return 1;
+      if (b.price_cents == null) return -1;
+      return dir * (a.price_cents - b.price_cents);
+    };
+    if (sortBy === 'price-asc') result = [...result].sort(byPrice(1));
+    if (sortBy === 'price-desc') result = [...result].sort(byPrice(-1));
+    if (sortBy === 'name-asc') result = [...result].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    return result;
+  }, [products, searchTerm, selectedCategory, maxPrice, sortBy]);
 
-    // Filtrar por categoria
-    if (selectedCategory !== 'todos') {
-      result = result.filter(product => product.category === selectedCategory);
-    }
+  const categoryName = (slug) => categories.find((c) => c.slug === slug)?.name || slug;
+  const hasFilters = Boolean(searchTerm) || selectedCategory !== 'todos' || priceActive;
 
-    // Filtrar por faixa de preço
-    result = result.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Filtrar por avaliação
-    if (selectedRating > 0) {
-      result = result.filter(product => product.rating >= selectedRating);
-    }
-
-    // Ordenar produtos
-    switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'name-asc':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'rating-desc':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        // Ordem padrão (relevância) - manter a ordem original
-        break;
-    }
-
-    setFilteredProducts(result);
-  }, [searchTerm, selectedCategory, priceRange, sortBy, selectedRating, products]);
-
-  // Limpar todos os filtros
   const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('todos');
-    setPriceRange([0, 50]);
+    setParams({}, { replace: true });
+    setMaxPriceFilter(null);
     setSortBy('relevance');
-    setSelectedRating(0);
   };
-
-  // Contar produtos por categoria
-  const getCategoryCount = (category) => {
-    if (category === 'todos') return productsWithCategories.length;
-    return productsWithCategories.filter(product => product.category === category).length;
-  };
-
-  // Formatar preço
-  const formatPrice = (price) => {
-    return `R$ ${price.toFixed(2).replace('.', ',')}`;
-  };
-
-  // Obter imagem do produto (usa imagem padrão se não houver)
-  const getProductImage = (product) => {
-    return product.image || '/images/Logo.jpg';
-  };
-
-  // Calcular o preço máximo dos produtos
-  const maxPrice = Math.max(...productsWithCategories.map(p => p.price), 50);
 
   return (
     <div className="products-page">
-      {/* Hero Section */}
       <section className="products-hero">
         <div className="container">
           <div className="hero-content">
             <h1 className="hero-title">Nossas Delícias</h1>
             <p className="hero-subtitle">
-              Descubra todos os nossos produtos artesanais feitos com amor e ingredientes selecionados
+              Bolos, docinhos e kits festa artesanais, feitos sob encomenda na Tijuca
             </p>
           </div>
         </div>
       </section>
 
-      {/* Filtros e Busca */}
       <section className="products-filters">
         <div className="container">
           <div className="filters-header">
@@ -128,205 +80,101 @@ const Products = ({ products, addToCart }) => {
                 type="text"
                 placeholder="Buscar produtos..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => updateParam('search', e.target.value)}
                 className="search-input"
               />
               {searchTerm && (
-                <button 
-                  className="clear-search" 
-                  onClick={() => setSearchTerm('')}
-                >
+                <button className="clear-search" onClick={() => updateParam('search', '')} aria-label="Limpar busca">
                   <X size={16} />
                 </button>
               )}
             </div>
 
             <div className="filters-controls">
-              <button 
-                className="btn filter-toggle"
-                onClick={() => setShowFilters(!showFilters)}
-              >
+              <button className="btn filter-toggle" onClick={() => setShowFilters(!showFilters)}>
                 <Filter size={18} />
                 Filtros
               </button>
-              
+
               <div className="view-mode">
-                <button 
-                  className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                  onClick={() => setViewMode('grid')}
-                  aria-label="Visualização em grade"
-                >
+                <button className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                  onClick={() => setViewMode('grid')} aria-label="Visualização em grade">
                   <Grid size={18} />
                 </button>
-                <button 
-                  className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                  onClick={() => setViewMode('list')}
-                  aria-label="Visualização em lista"
-                >
+                <button className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                  onClick={() => setViewMode('list')} aria-label="Visualização em lista">
                   <List size={18} />
                 </button>
               </div>
-              
-              <select 
-                className="sort-select"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="relevance">Ordenar por: Relevância</option>
+
+              <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <option value="relevance">Ordenar por: Cardápio</option>
                 <option value="price-asc">Preço: Menor para Maior</option>
                 <option value="price-desc">Preço: Maior para Menor</option>
                 <option value="name-asc">Nome: A-Z</option>
-                <option value="rating-desc">Melhor Avaliados</option>
               </select>
             </div>
           </div>
 
-          {/* Filtros Expandidos */}
           <div className={`filters-expanded ${showFilters ? 'show' : ''}`}>
             <div className="filters-grid">
-              {/* Categorias */}
               <div className="filter-group">
-                <h4 className="filter-title">
-                  <ShoppingBag size={18} />
-                  Categorias
-                </h4>
+                <h4 className="filter-title"><ShoppingBag size={18} /> Categorias</h4>
                 <div className="category-list">
-                  {categories.map(category => (
+                  <button
+                    className={`category-btn ${selectedCategory === 'todos' ? 'active' : ''}`}
+                    onClick={() => updateParam('categoria', '')}
+                  >
+                    <span>Todos os Produtos</span>
+                    <span className="category-count">({products.length})</span>
+                  </button>
+                  {categories.map((c) => (
                     <button
-                      key={category}
-                      className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
-                      onClick={() => setSelectedCategory(category)}
+                      key={c.slug}
+                      className={`category-btn ${selectedCategory === c.slug ? 'active' : ''}`}
+                      onClick={() => updateParam('categoria', c.slug)}
                     >
-                      <span>{category === 'todos' ? 'Todos os Produtos' : category}</span>
-                      <span className="category-count">({getCategoryCount(category)})</span>
+                      <span>{c.name}</span>
+                      <span className="category-count">({c.count})</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Faixa de Preço */}
               <div className="filter-group">
-                <h4 className="filter-title">
-                  <Sliders size={18} />
-                  Faixa de Preço
-                </h4>
+                <h4 className="filter-title"><Sliders size={18} /> Preço máximo</h4>
                 <div className="price-filter">
                   <div className="price-range">
-                    <span>R$ {priceRange[0].toFixed(0)}</span>
-                    <span>R$ {priceRange[1].toFixed(0)}</span>
+                    <span>R$ 0</span>
+                    <span>até R$ {maxPrice}</span>
                   </div>
                   <input
-                    type="range"
-                    min="0"
-                    max={maxPrice}
-                    step="1"
-                    value={priceRange[0]}
-                    onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                    className="range-slider"
+                    type="range" min="1" max={priceCeiling} step="1" value={maxPrice}
+                    onChange={(e) => setMaxPriceFilter(parseInt(e.target.value, 10))}
+                    className="range-slider" aria-label="Preço máximo"
                   />
-                  <input
-                    type="range"
-                    min="0"
-                    max={maxPrice}
-                    step="1"
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                    className="range-slider"
-                  />
-                  <div className="price-inputs">
-                    <input
-                      type="number"
-                      min="0"
-                      max={maxPrice}
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([Math.min(parseInt(e.target.value) || 0, priceRange[1]), priceRange[1]])}
-                      className="price-input"
-                    />
-                    <span>até</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max={maxPrice}
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], Math.max(parseInt(e.target.value) || maxPrice, priceRange[0])])}
-                      className="price-input"
-                    />
-                  </div>
+                  <p className="filter-hint">Produtos “sob consulta” sempre aparecem.</p>
                 </div>
               </div>
 
-              {/* Avaliação */}
-              <div className="filter-group">
-                <h4 className="filter-title">
-                  <Star size={18} />
-                  Avaliação
-                </h4>
-                <div className="rating-filter">
-                  {[5, 4, 3].map(rating => (
-                    <button
-                      key={rating}
-                      className={`rating-btn ${selectedRating === rating ? 'active' : ''}`}
-                      onClick={() => setSelectedRating(selectedRating === rating ? 0 : rating)}
-                    >
-                      <div className="stars">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={16}
-                            fill={i < rating ? "#ffc107" : "#e4e5e9"}
-                            color={i < rating ? "#ffc107" : "#e4e5e9"}
-                          />
-                        ))}
-                      </div>
-                      <span className="rating-text">
-                        {rating}+ estrelas
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Filtros Ativos */}
               <div className="filter-group">
                 <div className="active-filters">
                   {searchTerm && (
-                    <span className="active-filter">
-                      Busca: "{searchTerm}"
-                      <button onClick={() => setSearchTerm('')}>
-                        <X size={12} />
-                      </button>
+                    <span className="active-filter">Busca: “{searchTerm}”
+                      <button onClick={() => updateParam('search', '')}><X size={12} /></button>
                     </span>
                   )}
                   {selectedCategory !== 'todos' && (
-                    <span className="active-filter">
-                      Categoria: {selectedCategory}
-                      <button onClick={() => setSelectedCategory('todos')}>
-                        <X size={12} />
-                      </button>
+                    <span className="active-filter">Categoria: {categoryName(selectedCategory)}
+                      <button onClick={() => updateParam('categoria', '')}><X size={12} /></button>
                     </span>
                   )}
-                  {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
-                    <span className="active-filter">
-                      Preço: R${priceRange[0]} - R${priceRange[1]}
-                      <button onClick={() => setPriceRange([0, maxPrice])}>
-                        <X size={12} />
-                      </button>
+                  {priceActive && (
+                    <span className="active-filter">Até {formatBRL(maxPrice * 100)}
+                      <button onClick={() => setMaxPriceFilter(null)}><X size={12} /></button>
                     </span>
                   )}
-                  {selectedRating > 0 && (
-                    <span className="active-filter">
-                      Avaliação: {selectedRating}+ estrelas
-                      <button onClick={() => setSelectedRating(0)}>
-                        <X size={12} />
-                      </button>
-                    </span>
-                  )}
-                  
-                  {(searchTerm || selectedCategory !== 'todos' || priceRange[0] > 0 || priceRange[1] < maxPrice || selectedRating > 0) && (
-                    <button className="clear-all-btn" onClick={clearFilters}>
-                      Limpar todos
-                    </button>
-                  )}
+                  {hasFilters && <button className="clear-all-btn" onClick={clearFilters}>Limpar todos</button>}
                 </div>
               </div>
             </div>
@@ -334,75 +182,58 @@ const Products = ({ products, addToCart }) => {
         </div>
       </section>
 
-      {/* Resultados */}
       <section className="products-results">
         <div className="container">
-          <div className="results-header">
-            <h2 className="results-title">
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
-            </h2>
-            {filteredProducts.length === 0 && (
-              <div className="no-results">
-                <p>Nenhum produto encontrado com os filtros selecionados.</p>
-                <button className="btn" onClick={clearFilters}>
-                  Limpar filtros
-                </button>
-              </div>
-            )}
-          </div>
+          {loading && <p className="catalog-status">Carregando o cardápio...</p>}
+          {error && (
+            <div className="no-results">
+              <p>{error}</p>
+              <button className="btn" onClick={onRetry}>Tentar novamente</button>
+            </div>
+          )}
 
-          {/* Grid/Lista de Produtos */}
-          {filteredProducts.length > 0 && (
+          {!loading && !error && (
+            <div className="results-header">
+              <h2 className="results-title">
+                {filtered.length} {filtered.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+              </h2>
+              {filtered.length === 0 && (
+                <div className="no-results">
+                  <p>Nenhum produto encontrado com os filtros selecionados.</p>
+                  <button className="btn" onClick={clearFilters}>Limpar filtros</button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {filtered.length > 0 && (
             <div className={`products-container ${viewMode}`}>
-              {filteredProducts.map(product => (
+              {filtered.map((product) => (
                 <div key={product.id} className="product-card">
-                  <Link to={`/produto/${product.id}`} className="product-image-link">
+                  <Link to={`/produto/${product.slug}`} className="product-image-link">
                     <div className="product-image">
-                      <img src={getProductImage(product)} alt={product.name} />
-                      {product.isNew && <span className="product-badge">Novo</span>}
+                      <img src={product.image} alt={product.name} loading="lazy" />
+                      {product.is_new && <span className="product-badge">Novo</span>}
                     </div>
                   </Link>
                   <div className="product-info">
                     <div className="product-header">
-                      <Link to={`/produto/${product.id}`} className="product-name-link">
+                      <Link to={`/produto/${product.slug}`} className="product-name-link">
                         <h3 className="product-name">{product.name}</h3>
                       </Link>
-                      <span className="product-price">{formatPrice(product.price)}</span>
+                      <span className="product-price">{priceLabel(product)}</span>
                     </div>
-                    
-                    <p className="product-description">
-                      {product.description || 'Delicioso produto artesanal feito com ingredientes selecionados.'}
-                    </p>
-                    
+
+                    <p className="product-description">{product.description}</p>
+
                     <div className="product-meta">
                       <span className="product-category">{product.category}</span>
-                      <div className="product-rating">
-                        <div className="stars">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={14}
-                              fill={i < product.rating ? "#ffc107" : "#e4e5e9"}
-                              color={i < product.rating ? "#ffc107" : "#e4e5e9"}
-                            />
-                          ))}
-                        </div>
-                        <span className="rating-count">({product.reviewCount})</span>
-                      </div>
+                      {product.min_qty > 1 && <span className="rating-count">Mínimo de {product.min_qty} un.</span>}
                     </div>
-                    
+
                     <div className="product-actions">
-                      <button 
-                        className="btn add-to-cart-btn"
-                        onClick={() => addToCart(product)}
-                      >
-                        Adicionar ao Carrinho
-                      </button>
-                      <Link 
-                        to={`/produto/${product.id}`} 
-                        className="btn btn-outline"
-                      >
-                        Ver Detalhes
+                      <Link to={`/produto/${product.slug}`} className="btn add-to-cart-btn">
+                        {product.price_cents == null ? 'Pedir orçamento' : 'Escolher opções'}
                       </Link>
                     </div>
                   </div>
@@ -410,38 +241,9 @@ const Products = ({ products, addToCart }) => {
               ))}
             </div>
           )}
-
-          {/* Categorias Destaque */}
-          <div className="featured-categories">
-            <h3 className="section-title">Navegue por Categorias</h3>
-            <div className="categories-grid">
-              {categories
-                .filter(cat => cat !== 'todos')
-                .map(category => (
-                  <div 
-                    key={category} 
-                    className="category-card"
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    <div className="category-image">
-                      <img 
-                        src={productsWithCategories.find(p => p.category === category)?.image || '/images/Logo.jpg'} 
-                        alt={category} 
-                      />
-                      <div className="category-overlay">
-                        <h4>{category}</h4>
-                        <p>{getCategoryCount(category)} produtos</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Banner de Destaque */}
       <section className="products-banner">
         <div className="container">
           <div className="banner-content">
@@ -449,8 +251,11 @@ const Products = ({ products, addToCart }) => {
             <p>Precisa de algo personalizado para sua festa ou evento especial?</p>
             <p className="banner-highlight">Fazemos encomendas personalizadas!</p>
             <div className="banner-actions">
-              <a href="#contact" className="btn">Solicitar Orçamento</a>
-              <a href="tel:+5511999999999" className="btn btn-secondary">Ligar Agora</a>
+              <a className="btn" target="_blank" rel="noopener noreferrer"
+                href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Olá! Gostaria de um orçamento para uma encomenda.')}`}>
+                Solicitar Orçamento
+              </a>
+              <a href="tel:+5521996911177" className="btn btn-secondary">Ligar Agora</a>
             </div>
           </div>
         </div>

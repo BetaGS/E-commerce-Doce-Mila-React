@@ -1,6 +1,7 @@
 // src/pages/Auth/Register/Register.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { api } from '../../../services/api';
 import './Register.css';
 import { Mail, Lock, User, Eye, EyeOff, Phone, Cookie } from 'lucide-react';
 
@@ -17,7 +18,6 @@ const Register = ({ onRegister }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -59,8 +59,8 @@ const Register = ({ onRegister }) => {
     
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Senha deve ter pelo menos 8 caracteres';
     }
     
     if (!formData.confirmPassword) {
@@ -88,14 +88,8 @@ const Register = ({ onRegister }) => {
   };
 
   const handlePhoneChange = (e) => {
-    const formatted = formatPhone(e.target.value);
-    handleChange({
-      ...e,
-      target: {
-        ...e.target,
-        value: formatted
-      }
-    });
+    // Monta o evento à mão: espalhar e.target perde name/type (são propriedades do protótipo do DOM)
+    handleChange({ target: { name: 'phone', value: formatPhone(e.target.value), type: 'tel' } });
   };
 
   const handleSubmit = async (e) => {
@@ -110,31 +104,16 @@ const Register = ({ onRegister }) => {
     setIsLoading(true);
     
     try {
-      // Simulação de API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Dados simulados do usuário
-      const userData = {
-        id: Date.now(),
-        name: formData.name,
-        email: formData.email,
+      const { user, token } = await api.register({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         phone: formData.phone,
-        avatar: null,
-        createdAt: new Date().toISOString()
-      };
-      
-      const token = 'fake-jwt-token-register-' + Date.now();
-      
-      // Chamar a função de registro do App.jsx
-      onRegister(userData, token);
-      
-      // Redirecionar para home
-      navigate('/');
-      
-    } catch (error) {
-      setErrors({
-        submit: 'Erro ao criar conta. Tente novamente.'
+        password: formData.password,
       });
+      onRegister(user, token);
+    } catch (error) {
+      // Erros por campo vindos do servidor (ex.: e-mail já cadastrado)
+      setErrors({ ...error.fields, submit: error.message });
     } finally {
       setIsLoading(false);
     }

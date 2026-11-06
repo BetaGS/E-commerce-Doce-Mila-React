@@ -96,3 +96,17 @@
     padding: 40px 0;
   }
 }
+.catalog-status {
+  text-align: center;
+  color: #666;
+  padding: 30px 0;
+}
+
+.catalog-status .btn {
+  margin-top: 12px;
+}
+
+.catalog-more {
+  text-align: center;
+  margin-top: 40px;
+}

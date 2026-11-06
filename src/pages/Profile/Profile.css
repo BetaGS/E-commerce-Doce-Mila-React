@@ -1,0 +1,41 @@
+.pf-page { padding: 40px 0 70px; background: #fff9fb; min-height: 60vh; }
+.pf-wrap { max-width: 720px; display: flex; flex-direction: column; gap: 20px; }
+.pf-header { display: flex; align-items: center; gap: 18px; }
+.pf-avatar { width: 68px; height: 68px; border-radius: 50%; background: #d63384; color: #fff; font-size: 1.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pf-title { font-family: 'Dancing Script', cursive; color: #d63384; font-size: 2.2rem; line-height: 1.1; }
+.pf-email { color: #777; word-break: break-all; }
+.pf-card { background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,.07); }
+.pf-card h2 { font-size: 1.2rem; color: #333; margin-bottom: 16px; }
+.pf-form { display: flex; flex-direction: column; gap: 14px; }
+.pf-field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; color: #555; font-size: .92rem; }
+.pf-field input { padding: 12px 14px; border: 2px solid #e9ecef; border-radius: 10px; font: inherit; font-weight: 400; }
+.pf-field input:focus { border-color: #d63384; outline: none; }
+.pf-field input:disabled { background: #f6f6f6; color: #888; }
+.pf-field small { font-weight: 400; color: #888; }
+.pf-field .pf-err { color: #c0223f; }
+.pf-form .btn { align-self: flex-start; }
+.pf-form .btn:disabled { opacity: .6; cursor: not-allowed; }
+.pf-msg { padding: 10px 12px; border-radius: 8px; font-size: .9rem; }
+.pf-msg.ok { background: #d9f2e3; color: #17663a; }
+.pf-msg.error { background: #fff0f3; color: #c0223f; border: 1px solid #ffc2cf; }
+.pf-row { display: flex; justify-content: space-between; align-items: baseline; }
+.pf-link { color: #d63384; font-weight: 600; }
+.pf-orders { list-style: none; display: grid; gap: 8px; }
+.pf-orders a { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #eee; border-radius: 10px; color: inherit; text-decoration: none; font-size: .92rem; }
+.pf-orders a:hover { border-color: #ff6b9d; background: #fff9fb; }
+.pf-logout { align-self: flex-start; color: #888; text-decoration: underline; }
+
+/* Toggle Meu perfil / Últimos pedidos */
+.pf-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: #ffe6ee; border-radius: 999px; }
+.pf-tab { padding: 11px 14px; border: none; border-radius: 999px; background: transparent; color: #7a3b57; font: inherit; font-weight: 600; cursor: pointer; transition: background-color .2s, color .2s; }
+.pf-tab:hover:not(.active) { background: rgba(255,255,255,.6); }
+.pf-tab.active { background: #d63384; color: #fff; }
+.pf-tab:focus-visible { outline: 3px solid #ff6b9d; outline-offset: 2px; }
+.pf-panel { display: flex; flex-direction: column; gap: 20px; }
+
+.pf-order { display: flex; flex-direction: column; gap: 6px; background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 15px rgba(0,0,0,.07); color: inherit; text-decoration: none; border: 2px solid transparent; }
+.pf-order:hover { border-color: #ff6b9d; }
+.pf-order small { color: #777; }
+.pf-status { padding: 4px 12px; border-radius: 999px; font-size: .82rem; font-weight: 600; background: #fff3cd; color: #8a6d00; }
+.pf-status.s-confirmed, .pf-status.s-in_production, .pf-status.s-ready, .pf-status.s-completed { background: #d9f2e3; color: #17663a; }
+.pf-status.s-cancelled { background: #f1f1f1; color: #666; }

@@ -1,0 +1,10 @@
+.adm-page { padding: 40px 0 70px; background: #fff9fb; }
+.adm-title { color: #d63384; margin-bottom: 16px; }
+.adm-bar { display: flex; gap: 10px; margin-bottom: 18px; }
+.adm-bar select, .adm-card select { padding: 8px 10px; border: 2px solid #e9ecef; border-radius: 8px; }
+.adm-card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 14px; box-shadow: 0 3px 12px rgba(0,0,0,.07); display: grid; gap: 8px; }
+.adm-card header { display: flex; flex-direction: column; gap: 2px; }
+.adm-card header span, .adm-card small { color: #777; font-size: .85rem; }
+.adm-card ul { padding-left: 18px; }
+.adm-card footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.adm-error { background: #fff0f3; color: #c0223f; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }

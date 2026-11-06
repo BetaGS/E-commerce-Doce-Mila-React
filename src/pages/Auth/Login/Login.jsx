@@ -1,6 +1,7 @@
 // src/pages/Auth/Login/Login.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { api } from '../../../services/api';
 import './Login.css';
 import { Mail, Lock, Eye, EyeOff, Cookie } from 'lucide-react';
 
@@ -13,7 +14,6 @@ const Login = ({ onLogin }) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,8 +41,6 @@ const Login = ({ onLogin }) => {
     
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
     }
     
     return newErrors;
@@ -60,29 +58,14 @@ const Login = ({ onLogin }) => {
     setIsLoading(true);
     
     try {
-      // Simulação de API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Dados simulados do usuário
-      const userData = {
-        id: 1,
-        name: 'Usuário Teste',
-        email: formData.email,
-        avatar: null
-      };
-      
-      const token = 'fake-jwt-token-' + Date.now();
-      
-      // Chamar a função de login do App.jsx
-      onLogin(userData, token);
-      
-      // Redirecionar para home
-      navigate('/');
-      
-    } catch (error) {
-      setErrors({
-        submit: 'Email ou senha incorretos'
+      const { user, token } = await api.login({
+        email: formData.email.trim(),
+        password: formData.password,
       });
+      // O App guarda a sessão e redireciona (volta para a página que o cliente tentava abrir)
+      onLogin(user, token);
+    } catch (error) {
+      setErrors({ submit: error.message });
     } finally {
       setIsLoading(false);
     }

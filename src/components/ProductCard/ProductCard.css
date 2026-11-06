@@ -121,3 +121,24 @@
 .product-name-link:hover .product-name {
   color: #d63384;
 }
+/* Preço por cento/unidade e quantidade mínima (catálogo real) */
+.product-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-price-block .product-price {
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.product-price.quote {
+  color: #6c757d;
+  font-size: 1.05rem;
+}
+
+.product-min-qty {
+  font-size: 0.8rem;
+  color: #777;
+}

@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import { ShoppingCart, Menu, X, User, Search, ChevronDown } from 'lucide-react';
 
-const Navbar = ({ cartItemsCount, openCart }) => {
+const Navbar = ({ cartItemsCount, openCart, isAuthenticated, user, onLogout, categories = [] }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,17 +19,12 @@ const Navbar = ({ cartItemsCount, openCart }) => {
     { path: '/produtos', label: 'Produtos' },
     { path: '/sobre', label: 'Sobre Nós' },
     { path: '/contato', label: 'Contato' },
-    { path: '/login', label: 'Login' },
+    ...(isAuthenticated ? [] : [{ path: '/login', label: 'Login' }]),
+    ...(user?.is_admin ? [{ path: '/admin', label: 'Painel' }] : []),
   ];
 
-  const productCategories = [
-    { id: 1, name: 'Bolos', slug: 'bolos' },
-    { id: 2, name: 'Doces Finos', slug: 'doces-finos' },
-    { id: 3, name: 'Tortas', slug: 'tortas' },
-    { id: 4, name: 'Cupcakes', slug: 'cupcakes' },
-    { id: 5, name: 'Cookies', slug: 'cookies' },
-    { id: 6, name: 'Pães Doces', slug: 'paes-doces' },
-  ];
+  // Categorias reais, vindas do catálogo
+  const productCategories = categories.map((c, index) => ({ id: index, name: c.name, slug: c.slug }));
 
   // Bloqueia o scroll do body quando o menu está aberto
   useEffect(() => {
@@ -140,6 +135,9 @@ const Navbar = ({ cartItemsCount, openCart }) => {
                     </Link>
                   </li>
                 ))}
+                {isAuthenticated && (
+                  <li><Link to="/" onClick={onLogout}>Sair</Link></li>
+                )}
               </ul>
             </nav>
 
@@ -155,7 +153,7 @@ const Navbar = ({ cartItemsCount, openCart }) => {
               </button>
 
               {/* Conta */}
-              <Link to="/login" className="account-btn" aria-label="Minha conta">
+              <Link to={isAuthenticated ? '/perfil' : '/login'} className="account-btn" aria-label="Minha conta">
                 <User size={20} />
               </Link>
 
@@ -276,14 +274,19 @@ const Navbar = ({ cartItemsCount, openCart }) => {
           </ul>
           
           <div className="mobile-actions">
-            <Link 
-              to="/login" 
+            <Link
+              to={isAuthenticated ? '/perfil' : '/login'}
               className="btn-outline"
               onClick={() => setIsMenuOpen(false)}
             >
               <User size={18} />
-              Minha Conta
+              {isAuthenticated ? `Olá, ${user?.name?.split(' ')[0] || 'cliente'}` : 'Minha Conta'}
             </Link>
+            {isAuthenticated && (
+              <Link to="/" className="btn-outline" onClick={() => { setIsMenuOpen(false); onLogout(); }}>
+                Sair
+              </Link>
+            )}
           </div>
         </nav>
       </div>

@@ -1,0 +1,124 @@
+/* Escolhas do produto (sabor, massa, recheio, tema) */
+.opt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 22px 0;
+}
+
+.opt-label {
+  font-size: 0.98rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.opt-count {
+  font-weight: normal;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.opt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.opt-chip {
+  padding: 8px 14px;
+  border: 2px solid #e9ecef;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: #444;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.opt-chip:hover:not(:disabled) {
+  border-color: #ff6b9d;
+}
+
+.opt-chip.selected {
+  border-color: #d63384;
+  background: #ffe6ee;
+  color: #b02a6b;
+  font-weight: 600;
+}
+
+.opt-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.opt-chip:focus-visible,
+.opt-select:focus-visible,
+.opt-text:focus-visible {
+  outline: 3px solid #ff6b9d;
+  outline-offset: 2px;
+}
+
+.opt-select,
+.opt-text {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
+.opt-select:focus,
+.opt-text:focus {
+  border-color: #d63384;
+}
+
+.product-notes {
+  font-size: 0.88rem;
+  color: #777;
+  margin-top: 8px;
+}
+
+.opt-total {
+  color: #444;
+  margin-top: 12px;
+  font-size: 0.95rem;
+}
+
+.opt-total strong {
+  color: #d63384;
+  font-size: 1.15rem;
+}
+
+.opt-total-note {
+  font-size: 0.82rem;
+  color: #777;
+  margin-top: 4px;
+}
+
+.opt-error {
+  background: #fff0f3;
+  color: #c0223f;
+  border: 1px solid #ffc2cf;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.opt-whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #1f9d55;
+}
+
+.opt-whatsapp:hover {
+  background-color: #17804a;
+}
+
+.product-actions .product-price {
+  display: block;
+  font-size: 1.35rem;
+}

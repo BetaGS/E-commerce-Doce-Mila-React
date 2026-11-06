@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Contact.css';
+import { api } from '../../services/api';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle, MessageSquare, User, Loader2 } from 'lucide-react';
 
 const Contact = () => {
@@ -14,9 +15,7 @@ const Contact = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // CONFIGURAÇÃO DA API
-  const API_URL = "https://teste-java-1.onrender.com/api/contato";
-  const WHATSAPP_NUMBER = "5521999472392";
+  const [waLink, setWaLink] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,27 +55,12 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      // 1. ENVIO PARA A API JAVA (RENDER)
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            nome: formData.name,
-            email: formData.email,
-            mensagem: `[Assunto: ${formData.subject}] - ${formData.message} (Tel: ${formData.phone})`
-        }),
+      // Salva a mensagem no servidor (que avisa a confeitaria) e recebe o link oficial wa.me já preenchido
+      const { whatsapp_url: waUrl } = await api.sendContact({
+        name: formData.name, email: formData.email, phone: formData.phone,
+        subject: formData.subject, message: formData.message,
       });
-
-      if (!response.ok) throw new Error("Erro no servidor");
-
-      // 2. PREPARAÇÃO DA MENSAGEM WHATSAPP
-      const msgWhatsapp = `*NOVO CONTATO* 🚀\n\n` +
-                          `*Nome:* ${formData.name}\n` +
-                          `*Email:* ${formData.email}\n` +
-                          `*Assunto:* ${formData.subject}\n` +
-                          `*Mensagem:* ${formData.message}`;
-      
-      const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgWhatsapp)}`;
+      setWaLink(waUrl);
 
       // 3. REDIRECIONAMENTO INTELIGENTE (RESOLVE O PROBLEMA DO CELULAR)
       // Usamos um pequeno delay para garantir que o estado de "isSubmitting" seja processado
@@ -93,11 +77,11 @@ const Contact = () => {
       // Feedback de Sucesso
       setIsSubmitted(true);
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      setTimeout(() => setIsSubmitted(false), 5000);
+      setTimeout(() => setIsSubmitted(false), 20000);
       
     } catch (error) {
       console.error("Erro:", error);
-      setErrors({ submit: 'O servidor demorou a responder. Tente novamente.' });
+      setErrors({ ...(error.fields || {}), submit: error.message || 'Tente novamente.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +124,7 @@ const Contact = () => {
                   <CheckCircle size={24} />
                   <div>
                     <h4>Enviado com sucesso!</h4>
-                    <p>Abrindo seu WhatsApp...</p>
+                    <p>Abrindo seu WhatsApp... <a href={waLink} target="_blank" rel="noopener noreferrer">Se não abrir, clique aqui.</a></p>
                   </div>
                 </div>
               )}
