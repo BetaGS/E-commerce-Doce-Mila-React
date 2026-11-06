@@ -34,7 +34,11 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
 
   if (!response.ok) {
     if (response.status === 401 && token) window.dispatchEvent(new Event('auth:expired'));
-    throw new ApiError(data.error || 'Algo deu errado. Tente novamente.', response.status, data.fields);
+    if (!data.error) {
+      // Resposta que não veio da nossa API (ex.: página 404 do site estático): provável VITE_API_URL ausente
+      console.error(`API inesperada: ${response.status} em ${BASE}/api${path}. Confira o VITE_API_URL.`);
+    }
+    throw new ApiError(data.error || 'Não foi possível carregar os dados do servidor. Tente novamente em instantes.', response.status, data.fields);
   }
   return data;
 }
