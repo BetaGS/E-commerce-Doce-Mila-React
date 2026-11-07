@@ -39,3 +39,7 @@
 .pf-status { padding: 4px 12px; border-radius: 999px; font-size: .82rem; font-weight: 600; background: #fff3cd; color: #8a6d00; }
 .pf-status.s-confirmed, .pf-status.s-in_production, .pf-status.s-ready, .pf-status.s-completed { background: #d9f2e3; color: #17663a; }
 .pf-status.s-cancelled { background: #f1f1f1; color: #666; }
+
+.pf-admin { background: #fff; border-radius: 14px; padding: 14px 20px; box-shadow: 0 4px 15px rgba(0,0,0,.07); }
+.pf-admin summary { cursor: pointer; color: #666; font-weight: 600; }
+.pf-admin .pf-form { margin-top: 14px; }

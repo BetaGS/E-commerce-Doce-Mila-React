@@ -1,9 +1,9 @@
+import hmac
 import re
-import sqlite3
 
-from flask import Blueprint, g, request
+from flask import Blueprint, current_app, g, request
 
-from db import get_db
+from db import INTEGRITY_ERRORS, get_db
 from security import (EMAIL_RE, api_error, clear_failures, create_token, hash_password, login_required,
                       register_failure, too_many_attempts, user_json, verify_password)
 from flask import jsonify
@@ -40,7 +40,8 @@ def register():
         cur = db.execute("INSERT INTO users (name,email,phone,password_hash) VALUES (?,?,?,?)",
                          (name, email, phone, hash_password(password)))
         db.commit()
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERRORS:
+        db.rollback()
         return api_error("Já existe uma conta com esse e-mail.", 409, fields={"email": "E-mail já cadastrado."})
     user = db.execute("SELECT * FROM users WHERE id = ?", (cur.lastrowid,)).fetchone()
     return jsonify(user=user_json(user), token=create_token(user["id"])), 201
@@ -104,3 +105,24 @@ def change_password():
     db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(new), g.user["id"]))
     db.commit()
     return jsonify(ok=True)
+
+
+@bp.post("/claim-admin")
+@login_required
+def claim_admin():
+    """Torna a conta logada administradora, usando o código secreto ADMIN_SETUP_KEY do servidor."""
+    secret = current_app.config["ADMIN_SETUP_KEY"]
+    if len(secret) < 16:
+        return api_error("Ativação de administrador desativada.", 404)
+    key = f"admin|{g.user['id']}|{request.remote_addr}"
+    if too_many_attempts(key):
+        return api_error("Muitas tentativas. Tente novamente em alguns minutos.", 429)
+    given = (request.get_json(silent=True) or {}).get("key") or ""
+    if not hmac.compare_digest(given.encode(), secret.encode()):
+        register_failure(key)
+        return api_error("Código incorreto.", 403)
+    db = get_db()
+    db.execute("UPDATE users SET is_admin = 1 WHERE id = ?", (g.user["id"],))
+    db.commit()
+    user = db.execute("SELECT * FROM users WHERE id = ?", (g.user["id"],)).fetchone()
+    return jsonify(user=user_json(user))

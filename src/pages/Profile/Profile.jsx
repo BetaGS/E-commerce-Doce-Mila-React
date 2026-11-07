@@ -25,6 +25,21 @@ const Profile = ({ user, onUserUpdate, onLogout }) => {
   const [pwErrors, setPwErrors] = useState({});
   const [pwSaving, setPwSaving] = useState(false);
 
+  const [adminKey, setAdminKey] = useState('');
+  const [adminMsg, setAdminMsg] = useState({ type: '', text: '' });
+  const claimAdmin = async (e) => {
+    e.preventDefault();
+    setAdminMsg({ type: '', text: '' });
+    try {
+      const { user: fresh } = await api.claimAdmin(adminKey);
+      onUserUpdate(fresh);
+      setAdminKey('');
+      setAdminMsg({ type: 'ok', text: 'Acesso liberado! O item “Painel” apareceu no menu.' });
+    } catch (err) {
+      setAdminMsg({ type: 'error', text: err.message });
+    }
+  };
+
   const [orders, setOrders] = useState(null);
   const [ordersError, setOrdersError] = useState('');
   useEffect(() => {
@@ -146,6 +161,22 @@ const Profile = ({ user, onUserUpdate, onLogout }) => {
                 <button className="btn" disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar senha'}</button>
               </form>
             </section>
+
+            {user?.is_admin ? (
+              <Link to="/admin" className="pf-link">Abrir o painel de administração</Link>
+            ) : (
+              <details className="pf-admin">
+                <summary>Sou administrador(a) da loja</summary>
+                <form onSubmit={claimAdmin} className="pf-form">
+                  <label className="pf-field">Código de administrador
+                    <input type="password" autoComplete="off" value={adminKey}
+                      onChange={(e) => setAdminKey(e.target.value)} required />
+                  </label>
+                  {adminMsg.text && <p className={`pf-msg ${adminMsg.type}`} role="status">{adminMsg.text}</p>}
+                  <button className="btn">Ativar acesso</button>
+                </form>
+              </details>
+            )}
 
             <Link to="/" className="pf-logout" onClick={onLogout}>Sair da conta</Link>
           </div>

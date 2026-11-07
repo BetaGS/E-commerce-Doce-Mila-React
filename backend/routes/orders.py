@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from flask import Blueprint, current_app, g, jsonify, request
 
-from db import get_db, loads
+from db import get_db, loads, now_utc
 from security import api_error, login_required
 from services import mercadopago as mp
 from services import whatsapp as wa
@@ -96,9 +96,9 @@ def method_available(method):
 def mark_paid(db, order, paid_cents, mp_payment_id=None):
     if order["status"] != "pending_payment":
         return False
-    db.execute("UPDATE orders SET status = 'confirmed', paid_cents = ?, paid_at = datetime('now'), "
+    db.execute("UPDATE orders SET status = 'confirmed', paid_cents = ?, paid_at = ?, "
                "mp_payment_id = COALESCE(?, mp_payment_id) WHERE id = ?",
-               (paid_cents, mp_payment_id, order["id"]))
+               (paid_cents, now_utc(), mp_payment_id, order["id"]))
     db.commit()
     return True
 

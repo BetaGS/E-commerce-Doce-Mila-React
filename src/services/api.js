@@ -50,6 +50,7 @@ export const api = {
   register: (payload) => request('/auth/register', { method: 'POST', body: payload, auth: false }),
   login: (payload) => request('/auth/login', { method: 'POST', body: payload, auth: false }),
   me: () => request('/auth/me'),
+  claimAdmin: (key) => request('/auth/claim-admin', { method: 'POST', body: { key } }),
   updateProfile: (payload) => request('/auth/me', { method: 'PATCH', body: payload }),
   changePassword: (payload) => request('/auth/password', { method: 'POST', body: payload }),
   sendContact: (payload) => request('/contact', { method: 'POST', body: payload, auth: false }),

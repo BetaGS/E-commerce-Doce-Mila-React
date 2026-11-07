@@ -27,6 +27,15 @@ def _int(name, default):
         return default
 
 
+def _origins(raw, frontend_url):
+    """Normaliza (sem espaço, sem barra final, minúsculo). O FRONTEND_URL também é aceito.
+    Use "*" para liberar qualquer origem (seguro aqui: a API usa token Bearer, não cookies)."""
+    items = [o.strip().rstrip("/").lower() for o in raw.split(",") if o.strip()]
+    if frontend_url.strip():
+        items.append(frontend_url.strip().rstrip("/").lower())
+    return sorted(set(items))
+
+
 def load_config():
     db_path = Path(os.environ.get("DATABASE_PATH", "instance/docemila.db"))
     if not db_path.is_absolute():
@@ -34,11 +43,14 @@ def load_config():
     return {
         "SECRET_KEY": os.environ.get("SECRET_KEY", "dev-only-change-me"),
         "DATABASE_PATH": str(db_path),
+        # Se definido (ex.: postgresql://...), usa PostgreSQL em vez do arquivo SQLite
+        "DATABASE_URL": os.environ.get("DATABASE_URL", "").strip(),
         "JWT_EXPIRES_DAYS": _int("JWT_EXPIRES_DAYS", 7),
-        "CORS_ORIGINS": [o.strip() for o in os.environ.get(
-            "CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()],
-        "FRONTEND_URL": os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/"),
+        "CORS_ORIGINS": _origins(os.environ.get("CORS_ORIGINS", "http://localhost:3000"),
+                                 os.environ.get("FRONTEND_URL", "")),
+        "FRONTEND_URL": os.environ.get("FRONTEND_URL", "http://localhost:3000").strip().rstrip("/"),
         "API_PUBLIC_URL": os.environ.get("API_PUBLIC_URL", "").rstrip("/"),
+        "ADMIN_SETUP_KEY": os.environ.get("ADMIN_SETUP_KEY", ""),
         "PIX_KEY": os.environ.get("PIX_KEY", ""),
         "PIX_MERCHANT_NAME": os.environ.get("PIX_MERCHANT_NAME", "DOCE MILA"),
         "PIX_CITY": os.environ.get("PIX_CITY", "RIO DE JANEIRO"),

@@ -270,11 +270,26 @@ class ApiTest(unittest.TestCase):
         with self.app.app_context():
             self.assertEqual(get_db().execute("SELECT COUNT(*) FROM contacts").fetchone()[0], 1)
 
+    def test_claim_admin(self):
+        h = self.auth(self.register())
+        self.assertEqual(self.c.post("/api/auth/claim-admin", json={"key": "x"}, headers=h).status_code, 404)  # desativado
+        self.app.config["ADMIN_SETUP_KEY"] = "chave-secreta-de-teste-1234567890"
+        self.assertEqual(self.c.post("/api/auth/claim-admin", json={"key": "errada"}, headers=h).status_code, 403)
+        self.assertEqual(self.c.get("/api/admin/orders", headers=h).status_code, 403)
+        ok = self.c.post("/api/auth/claim-admin", json={"key": "chave-secreta-de-teste-1234567890"}, headers=h)
+        self.assertTrue(ok.get_json()["user"]["is_admin"])
+        self.assertEqual(self.c.get("/api/admin/orders", headers=h).status_code, 200)
+        self.assertEqual(self.c.post("/api/auth/claim-admin", json={"key": "x"}).status_code, 401)
+
     def test_cors(self):
         r = self.c.get("/api/health", headers={"Origin": "http://localhost:3000"})
         self.assertEqual(r.headers.get("Access-Control-Allow-Origin"), "http://localhost:3000")
         r = self.c.get("/api/health", headers={"Origin": "http://evil.example"})
         self.assertIsNone(r.headers.get("Access-Control-Allow-Origin"))
+        # barra final / maiúsculas na configuração não podem quebrar
+        from config import _origins
+        self.assertEqual(_origins(" HTTPS://Loja.onrender.com/ ,http://localhost:3000", "https://loja.onrender.com/"),
+                         ["http://localhost:3000", "https://loja.onrender.com"])
 
 
 if __name__ == "__main__":

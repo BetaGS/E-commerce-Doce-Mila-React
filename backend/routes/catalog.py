@@ -44,8 +44,8 @@ def get_product(slug):
 @bp.get("/categories")
 def list_categories():
     rows = get_db().execute(
-        "SELECT category, COUNT(*) AS n, MIN(sort_order) AS first FROM products WHERE active = 1 "
-        "GROUP BY category ORDER BY first").fetchall()
+        "SELECT category, COUNT(*) AS n, MIN(sort_order) AS first_order FROM products WHERE active = 1 "
+        "GROUP BY category ORDER BY first_order").fetchall()
     return jsonify(categories=[{"name": r["category"], "slug": slugify(r["category"]), "count": r["n"]}
                                for r in rows])
 

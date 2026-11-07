@@ -21,9 +21,26 @@ npm run dev
 O Vite encaminha `/api` para o Flask, então não há configuração extra em desenvolvimento.
 
 ## Painel da confeiteira
-1. Cadastre-se no site normalmente.
-2. `python manage.py make-admin seu@email.com`
-3. Acesse `/admin` para confirmar Pix recebidos e mudar o status dos pedidos.
+**Em produção (Render):**
+1. No Web Service, crie `ADMIN_SETUP_KEY` com um código aleatório de 32+ caracteres (botão *Generate*) e aguarde o redeploy.
+2. Cadastre-se e entre no site normalmente.
+3. Em `/perfil`, no fim da aba "Meu perfil", abra "Sou administrador(a) da loja", digite o código e clique em "Ativar acesso".
+4. Depois pode apagar `ADMIN_SETUP_KEY` do Render para desativar a ativação.
+
+**Local:** `python manage.py make-admin seu@email.com`
+
+Depois acesse `/admin` para confirmar Pix recebidos e mudar o status dos pedidos.
+
+## Banco de dados em produção (para não perder cadastros)
+O SQLite grava num arquivo do servidor, e no Render gratuito esse disco é apagado a cada reinício/deploy (por isso
+os cadastros sumiam). Em produção use um PostgreSQL externo:
+1. Crie um banco gratuito (ex.: [Neon](https://neon.tech)) e copie a *connection string* (`postgresql://...?sslmode=require`).
+2. No Web Service do Render, em Environment, crie `DATABASE_URL` com ela e salve (o Render refaz o deploy).
+3. Abra `/api/products`: o catálogo é criado sozinho. Cadastre-se de novo (os dados do SQLite antigo não migram)
+   e refaça a ativação de administrador.
+
+Sem `DATABASE_URL` o projeto usa SQLite (bom para desenvolvimento local). Confira as condições atuais do plano gratuito
+do provedor escolhido.
 
 ## WhatsApp
 - **Finalizar pedido (padrão):** o pedido é salvo no banco e o cliente abre o WhatsApp com a mensagem pronta

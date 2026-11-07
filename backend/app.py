@@ -43,7 +43,8 @@ def create_app(overrides=None):
     @app.after_request
     def add_cors(resp):
         origin = request.headers.get("Origin")
-        if origin and origin in app.config["CORS_ORIGINS"]:
+        allowed = app.config["CORS_ORIGINS"]
+        if origin and ("*" in allowed or origin.rstrip("/").lower() in allowed):
             resp.headers["Access-Control-Allow-Origin"] = origin
             resp.headers["Vary"] = "Origin"
             resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
